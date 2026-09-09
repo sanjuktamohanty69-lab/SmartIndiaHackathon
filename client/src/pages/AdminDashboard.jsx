@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import client from '../api/client'
+import WorkerCard from '../components/WorkerCard'
 import { useAuth } from '../context/AuthContext'
 
 const tabs = ['Overview', 'Workers', 'Disputes']
@@ -103,24 +104,22 @@ function AdminDashboard() {
         )}
 
         {activeTab === 'Workers' && (
-          <section className="overflow-hidden rounded-2xl bg-white shadow-xl shadow-emerald-950/5 ring-1 ring-slate-200">
-            <div className="overflow-x-auto">
-              <table className="w-full min-w-[620px] text-left text-sm">
-                <thead className="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
-                  <tr><th className="px-6 py-4">Worker</th><th className="px-6 py-4">Trade</th><th className="px-6 py-4">Trust score</th><th className="px-6 py-4">Status</th></tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100">
-                  {workers.map((worker) => (
-                    <tr key={worker.id}>
-                      <td className="px-6 py-4"><p className="font-semibold text-slate-900">{worker.name}</p><p className="text-slate-500">{worker.phone}</p></td>
-                      <td className="px-6 py-4 capitalize text-slate-700">{worker.trade}</td>
-                      <td className="px-6 py-4 font-semibold text-primary">{Math.round(worker.trust_score)}%</td>
-                      <td className="px-6 py-4"><span className={`rounded-full px-2.5 py-1 text-xs font-bold ${worker.available ? 'bg-emerald-50 text-primary' : 'bg-slate-100 text-slate-500'}`}>{worker.available ? 'Available' : 'Busy'}</span></td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+          <section className="grid gap-4 md:grid-cols-2">
+            {workers.map((worker) => (
+              <WorkerCard
+                key={worker.id}
+                name={worker.name}
+                trade={worker.trade}
+                trustScore={worker.trust_score}
+              >
+                <div className="flex items-center justify-between text-sm">
+                  <span className={`rounded-full px-2.5 py-1 text-xs font-bold ${worker.available ? 'bg-emerald-50 text-primary' : 'bg-slate-100 text-slate-500'}`}>
+                    {worker.available ? 'Available' : 'Busy'}
+                  </span>
+                  <span className="text-slate-500">{worker.phone}</span>
+                </div>
+              </WorkerCard>
+            ))}
           </section>
         )}
 

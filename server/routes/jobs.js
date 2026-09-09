@@ -46,6 +46,14 @@ function getJobMatches(jobId) {
   `).all(jobId)
 }
 
+function emitToUser(req, userId, event, payload) {
+  const io = req.app.get('io')
+  const userSockets = req.app.get('userSockets')
+  const sockets = userSockets?.get(String(userId))
+
+  sockets?.forEach((socketId) => io.to(socketId).emit(event, payload))
+}
+
 router.post('/', (req, res, next) => {
   try {
     if (!requireCustomer(req, res)) return
@@ -100,6 +108,13 @@ router.post('/', (req, res, next) => {
         matches: getJobMatches(jobId),
       }
     })()
+
+    result.matches.forEach((match) => {
+      emitToUser(req, match.worker_id, 'new-job-offer', {
+        job: result.job,
+        match,
+      })
+    })
 
     return res.status(201).json(result)
   } catch (error) {
@@ -163,6 +178,11 @@ router.post('/:id/accept', (req, res, next) => {
     if (!result) {
       return res.status(409).json({ error: 'This job is no longer available to accept.' })
     }
+
+    emitToUser(req, result.job.customer_id, 'job-accepted', {
+      job: result.job,
+      match: result.match,
+    })
 
     return res.json(result)
   } catch (error) {

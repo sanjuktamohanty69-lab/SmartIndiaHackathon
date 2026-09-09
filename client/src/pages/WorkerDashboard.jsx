@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
+import { io } from 'socket.io-client'
 import client from '../api/client'
 import { useAuth } from '../context/AuthContext'
 
@@ -30,6 +31,22 @@ function WorkerDashboard() {
     const intervalId = window.setInterval(fetchJobs, 5000)
     return () => window.clearInterval(intervalId)
   }, [fetchJobs])
+
+  useEffect(() => {
+    if (!user?.id) return undefined
+
+    const socket = io('http://localhost:5000', {
+      auth: { userId: user.id },
+    })
+
+    socket.on('new-job-offer', (event) => {
+      const trade = event.job?.trade || 'service'
+      window.alert(`New ${trade} job offer available.`)
+      fetchJobs()
+    })
+
+    return () => socket.disconnect()
+  }, [user?.id, fetchJobs])
 
   async function updateJob(jobId, action) {
     setBusyJobId(jobId)

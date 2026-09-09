@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
+import { io } from 'socket.io-client'
 import { Link } from 'react-router-dom'
 import client from '../api/client'
+import WorkerCard from '../components/WorkerCard'
 import { useAuth } from '../context/AuthContext'
 
 const fallbackLocation = { lat: 12.9716, lng: 77.5946 }
@@ -38,6 +40,29 @@ function CustomerDashboard() {
   const [isListening, setIsListening] = useState(false)
   const activeJobId = job?.id
   const jobStatus = job?.status
+
+  useEffect(() => {
+    if (!user?.id) return undefined
+
+    const socket = io('http://localhost:5000', {
+      auth: { userId: user.id },
+    })
+
+    socket.on('job-accepted', async (event) => {
+      if (event.job?.id !== activeJobId) return
+
+      setJob(event.job)
+      try {
+        const { data } = await client.get(`/jobs/${event.job.id}/matches`)
+        setJob(data.job)
+        setMatches(data.matches)
+      } catch (requestError) {
+        setError(requestError.response?.data?.error || 'Unable to refresh the accepted job.')
+      }
+    })
+
+    return () => socket.disconnect()
+  }, [user?.id, activeJobId])
 
   useEffect(() => {
     if (!activeJobId || jobStatus === 'completed') return undefined
@@ -210,13 +235,13 @@ function CustomerDashboard() {
                   {matches.length ? (
                     <div className="mt-3 space-y-3">
                       {matches.map((match) => (
-                        <article className="flex items-center justify-between rounded-xl border border-slate-200 p-4" key={match.id}>
-                          <div>
-                            <p className="font-semibold text-slate-900">{match.worker_name}</p>
-                            <p className="text-sm capitalize text-slate-600">{match.trade} · {match.distance_km.toFixed(2)} km away</p>
-                          </div>
-                          <span className="text-sm font-bold text-primary">Trust {Math.round(match.trust_score)}%</span>
-                        </article>
+                        <WorkerCard
+                          key={match.id}
+                          name={match.worker_name}
+                          trade={match.trade}
+                          trustScore={match.trust_score}
+                          distance={match.distance_km}
+                        />
                       ))}
                     </div>
                   ) : <p className="mt-3 text-sm text-slate-500">We are looking for available workers.</p>}
