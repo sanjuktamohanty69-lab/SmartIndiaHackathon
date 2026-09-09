@@ -44,7 +44,7 @@ function CustomerDashboard() {
   useEffect(() => {
     if (!user?.id) return undefined
 
-    const socket = io('http://localhost:5000', {
+    const socket = io({
       auth: { userId: user.id },
     })
 
