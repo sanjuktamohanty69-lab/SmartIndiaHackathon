@@ -14,7 +14,7 @@ const io = new Server(server, {
     credentials: true,
   },
 })
-const port = process.env.PORT || 5000
+const preferredPort = Number(process.env.PORT) || 5001
 const userSockets = new Map()
 const socketUsers = new Map()
 
@@ -68,6 +68,21 @@ app.use((error, req, res, next) => {
   })
 })
 
-server.listen(port, () => {
-  console.log(`SahakarWorks server listening on port ${port}`)
+function listenOnPort(port) {
+  server.listen(port, () => {
+    console.log(`SahakarWorks server listening on port ${port}`)
+  })
+}
+
+server.on('error', (error) => {
+  if (error.code === 'EADDRINUSE') {
+    const fallbackPort = preferredPort + 1
+    console.warn(`Port ${preferredPort} is busy, retrying on ${fallbackPort}`)
+    listenOnPort(fallbackPort)
+    return
+  }
+
+  throw error
 })
+
+listenOnPort(preferredPort)
