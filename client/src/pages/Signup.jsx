@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import client from '../api/client'
+import DocumentUpload from '../components/DocumentUpload'
 
 const bengaluruLocation = { lat: 12.9716, lng: 77.5946 }
 
@@ -13,6 +14,7 @@ function Signup() {
     role: 'customer',
     trade: 'plumber',
   })
+  const [documents, setDocuments] = useState([])
   const [error, setError] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
 
@@ -39,19 +41,19 @@ function Signup() {
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-slate-50 px-4 py-10">
-      <section className="w-full max-w-md rounded-2xl bg-white p-8 shadow-xl shadow-emerald-950/5 ring-1 ring-slate-200">
+    <main className="flex min-h-screen items-center justify-center bg-slate-50 px-4 py-10 transition-colors duration-200 dark:bg-slate-950">
+      <section className="w-full max-w-md rounded-2xl bg-white p-8 shadow-xl shadow-emerald-950/5 ring-1 ring-slate-200 transition-colors duration-200 dark:bg-slate-900 dark:ring-slate-700">
         <div className="mb-8">
           <p className="text-sm font-bold uppercase tracking-[0.2em] text-primary">SahakarWorks</p>
-          <h1 className="mt-3 text-3xl font-bold text-slate-900">Create your account</h1>
-          <p className="mt-2 text-slate-600">Join a trusted local services network.</p>
+          <h1 className="mt-3 text-3xl font-bold text-slate-900 dark:text-slate-100">Create your account</h1>
+          <p className="mt-2 text-slate-600 dark:text-slate-300">Join a trusted local services network.</p>
         </div>
 
         <form className="space-y-5" onSubmit={handleSubmit}>
-          <label className="block text-sm font-semibold text-slate-700">
+          <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200">
             Full name
             <input
-              className="mt-2 w-full rounded-lg border border-slate-300 px-3 py-3 outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
+              className="mt-2 w-full rounded-lg border border-slate-300 bg-white px-3 py-3 text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-primary focus:ring-2 focus:ring-primary/20 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-500"
               name="name"
               value={form.name}
               onChange={updateField}
@@ -60,10 +62,10 @@ function Signup() {
             />
           </label>
 
-          <label className="block text-sm font-semibold text-slate-700">
+          <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200">
             Phone number
             <input
-              className="mt-2 w-full rounded-lg border border-slate-300 px-3 py-3 outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
+              className="mt-2 w-full rounded-lg border border-slate-300 bg-white px-3 py-3 text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-primary focus:ring-2 focus:ring-primary/20 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-500"
               name="phone"
               type="tel"
               value={form.phone}
@@ -73,10 +75,10 @@ function Signup() {
             />
           </label>
 
-          <label className="block text-sm font-semibold text-slate-700">
+          <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200">
             Password
             <input
-              className="mt-2 w-full rounded-lg border border-slate-300 px-3 py-3 outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
+              className="mt-2 w-full rounded-lg border border-slate-300 bg-white px-3 py-3 text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-primary focus:ring-2 focus:ring-primary/20 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-500"
               name="password"
               type="password"
               value={form.password}
@@ -86,10 +88,10 @@ function Signup() {
             />
           </label>
 
-          <label className="block text-sm font-semibold text-slate-700">
+          <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200">
             I am a
             <select
-              className="mt-2 w-full rounded-lg border border-slate-300 bg-white px-3 py-3 outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
+              className="mt-2 w-full rounded-lg border border-slate-300 bg-white px-3 py-3 text-slate-900 outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
               name="role"
               value={form.role}
               onChange={updateField}
@@ -100,19 +102,37 @@ function Signup() {
           </label>
 
           {form.role === 'worker' && (
-            <label className="block text-sm font-semibold text-slate-700">
-              Trade
-              <select
-                className="mt-2 w-full rounded-lg border border-slate-300 bg-white px-3 py-3 outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
-                name="trade"
-                value={form.trade}
-                onChange={updateField}
-              >
-                <option value="plumber">Plumber</option>
-                <option value="electrician">Electrician</option>
-                <option value="carpenter">Carpenter</option>
-              </select>
-            </label>
+            <>
+              <label className="block text-sm font-semibold text-slate-700">
+                Trade
+                <select
+                  className="mt-2 w-full rounded-lg border border-slate-300 bg-white px-3 py-3 outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
+                  name="trade"
+                  value={form.trade}
+                  onChange={updateField}
+                >
+                  <option value="plumber">Plumber</option>
+                  <option value="electrician">Electrician</option>
+                  <option value="carpenter">Carpenter</option>
+                </select>
+              </label>
+
+              <div className="space-y-2">
+                <p className="text-sm font-semibold text-slate-700">Verification documents</p>
+                <DocumentUpload
+                  label="Upload your work documents"
+                  helperText="Add ID, skills proof, and work profile documents"
+                  accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
+                  maxFiles={3}
+                  onFilesChange={setDocuments}
+                />
+                {documents.length > 0 && (
+                  <p className="text-xs text-slate-500">
+                    {documents.length} document(s) selected for verification.
+                  </p>
+                )}
+              </div>
+            </>
           )}
 
           {error && <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
