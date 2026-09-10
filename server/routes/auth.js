@@ -29,38 +29,57 @@ function publicUser(user) {
 
 router.post('/signup', async (req, res, next) => {
   try {
-    const { name, phone, password, role, trade, lat, lng } = req.body
+    const { name, phone, password, role, trade, lat, lng } = req.body || {}
+    const normalizedName = typeof name === 'string' ? name.trim() : ''
+    const normalizedPhone = typeof phone === 'string' ? phone.trim() : ''
+    const normalizedPassword = typeof password === 'string' ? password : ''
+    const normalizedRole = typeof role === 'string' ? role.trim().toLowerCase() : ''
+    const normalizedTrade = typeof trade === 'string' ? trade.trim() : ''
 
-    if (!name || !phone || !password || !role) {
+    if (!normalizedName || !normalizedPhone || !normalizedPassword || !normalizedRole) {
       return res.status(400).json({ error: 'Name, phone, password, and role are required.' })
     }
 
-    if (!['customer', 'worker'].includes(role)) {
+    if (normalizedPassword.length < 6) {
+      return res.status(400).json({ error: 'Password must be at least 6 characters long.' })
+    }
+
+    if (!['customer', 'worker'].includes(normalizedRole)) {
       return res.status(400).json({ error: 'Role must be customer or worker.' })
     }
 
-    if (role === 'worker' && !trade) {
+    if (normalizedRole === 'worker' && !normalizedTrade) {
       return res.status(400).json({ error: 'Trade is required for workers.' })
     }
 
-    const existingUser = db.prepare('SELECT id FROM users WHERE phone = ?').get(phone)
+    const existingUser = db.prepare('SELECT id FROM users WHERE phone = ?').get(normalizedPhone)
 
     if (existingUser) {
       return res.status(409).json({ error: 'A user with this phone number already exists.' })
     }
 
-    const passwordHash = await bcrypt.hash(password, 10)
+    let passwordHash
+    try {
+      passwordHash = await bcrypt.hash(normalizedPassword, 10)
+    } catch (error) {
+      console.error('Password hashing failed during signup:', error)
+      return res.status(500).json({
+        error: 'We could not secure your password. Please try again later.',
+        code: 'PASSWORD_HASH_FAILED',
+      })
+    }
+
     const createUser = db.transaction(() => {
       const result = db
         .prepare('INSERT INTO users (name, phone, password, role) VALUES (?, ?, ?, ?)')
-        .run(name, phone, passwordHash, role)
+        .run(normalizedName, normalizedPhone, passwordHash, normalizedRole)
       const userId = Number(result.lastInsertRowid)
 
-      if (role === 'worker') {
+      if (normalizedRole === 'worker') {
         db.prepare(`
           INSERT INTO worker_profiles (user_id, trade, lat, lng)
           VALUES (?, ?, ?, ?)
-        `).run(userId, trade, lat ?? 12.9716, lng ?? 77.5946)
+        `).run(userId, normalizedTrade, lat ?? 12.9716, lng ?? 77.5946)
       }
 
       return db.prepare('SELECT id, name, phone, role FROM users WHERE id = ?').get(userId)
@@ -69,7 +88,17 @@ router.post('/signup', async (req, res, next) => {
     const user = publicUser(createUser)
     return res.status(201).json({ user, token: createToken(user) })
   } catch (error) {
-    return next(error)
+    console.error('Signup failed:', error)
+
+    if (error.code === 'SQLITE_CONSTRAINT_UNIQUE') {
+      return res.status(409).json({ error: 'A user with this phone number already exists.' })
+    }
+
+    return res.status(500).json({
+      error: 'Unable to create your account. Please try again later.',
+      code: error.code || 'SIGNUP_FAILED',
+      details: error.message,
+    })
   }
 })
 
