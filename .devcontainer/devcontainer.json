@@ -1,0 +1,12 @@
+{
+  "portsAttributes": {
+    "5173": {
+      "onAutoForward": "openBrowser",
+      "label": "Frontend"
+    },
+    "5000": {
+      "onAutoForward": "ignore",
+      "label": "Backend"
+    }
+  }
+}
