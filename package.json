@@ -1,0 +1,11 @@
+{
+  "name": "smart-india-hackathon",
+  "private": true,
+  "version": "1.0.0",
+  "scripts": {
+    "dev": "concurrently \"PORT=5000 node server/index.js\" \"npm --prefix client run dev -- --host\""
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.4"
+  }
+}
