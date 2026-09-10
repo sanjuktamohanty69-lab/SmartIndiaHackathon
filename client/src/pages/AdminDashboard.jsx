@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import client from '../api/client'
 import WorkerCard from '../components/WorkerCard'
 import { useAuth } from '../context/AuthContext'
@@ -16,11 +17,17 @@ function MetricCard({ label, value, accent }) {
 
 function AdminDashboard() {
   const { user, logout } = useAuth()
+  const navigate = useNavigate()
   const [activeTab, setActiveTab] = useState('Overview')
   const [stats, setStats] = useState(null)
   const [workers, setWorkers] = useState([])
   const [disputes, setDisputes] = useState([])
   const [error, setError] = useState('')
+
+  function handleLogout() {
+    logout()
+    navigate('/login')
+  }
 
   async function loadStats() {
     const { data } = await client.get('/admin/stats')
@@ -76,7 +83,7 @@ function AdminDashboard() {
             <h1 className="mt-2 text-3xl font-bold text-slate-900">Operations dashboard</h1>
             <p className="mt-2 text-slate-600">Welcome, {user?.name || 'Admin'}. Monitor the network and resolve disputes.</p>
           </div>
-          <button className="text-sm font-semibold text-slate-600 hover:text-primary" type="button" onClick={logout}>Sign out</button>
+          <button className="text-sm font-semibold text-slate-600 hover:text-primary" type="button" onClick={handleLogout}>Sign out</button>
         </header>
 
         <nav className="mb-6 flex gap-2 border-b border-slate-200" aria-label="Admin sections">

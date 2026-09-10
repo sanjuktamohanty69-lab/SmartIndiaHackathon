@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { io } from 'socket.io-client'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import client from '../api/client'
 import WorkerCard from '../components/WorkerCard'
 import { useAuth } from '../context/AuthContext'
@@ -31,6 +31,7 @@ function getLocation() {
 
 function CustomerDashboard() {
   const { user, logout } = useAuth()
+  const navigate = useNavigate()
   const recognitionRef = useRef(null)
   const [form, setForm] = useState({ trade: trades[0], description: '' })
   const [job, setJob] = useState(null)
@@ -40,6 +41,11 @@ function CustomerDashboard() {
   const [isListening, setIsListening] = useState(false)
   const activeJobId = job?.id
   const jobStatus = job?.status
+
+  function handleLogout() {
+    logout()
+    navigate('/login')
+  }
 
   useEffect(() => {
     if (!user?.id) return undefined
@@ -147,7 +153,7 @@ function CustomerDashboard() {
             <p className="text-sm font-bold uppercase tracking-[0.2em] text-primary">SahakarWorks</p>
             <h1 className="mt-2 text-3xl font-bold text-slate-900">How can we help, {user?.name || 'there'}?</h1>
           </div>
-          <button className="text-sm font-semibold text-slate-600 hover:text-primary" type="button" onClick={logout}>
+          <button className="text-sm font-semibold text-slate-600 hover:text-primary" type="button" onClick={handleLogout}>
             Sign out
           </button>
         </header>

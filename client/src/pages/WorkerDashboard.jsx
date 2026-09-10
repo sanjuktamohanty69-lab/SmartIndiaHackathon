@@ -1,14 +1,21 @@
 import { useCallback, useEffect, useState } from 'react'
 import { io } from 'socket.io-client'
+import { useNavigate } from 'react-router-dom'
 import client from '../api/client'
 import { useAuth } from '../context/AuthContext'
 
 function WorkerDashboard() {
   const { user, logout } = useAuth()
+  const navigate = useNavigate()
   const [jobs, setJobs] = useState([])
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(true)
   const [busyJobId, setBusyJobId] = useState(null)
+
+  function handleLogout() {
+    logout()
+    navigate('/login')
+  }
 
   const fetchJobs = useCallback(async () => {
     try {
@@ -78,7 +85,7 @@ function WorkerDashboard() {
             <h1 className="mt-2 text-3xl font-bold text-slate-900">Worker dashboard</h1>
             <p className="mt-2 text-slate-600">Welcome back, {user?.name || 'worker'}.</p>
           </div>
-          <button className="text-sm font-semibold text-slate-600 hover:text-primary" type="button" onClick={logout}>
+          <button className="text-sm font-semibold text-slate-600 hover:text-primary" type="button" onClick={handleLogout}>
             Sign out
           </button>
         </header>
