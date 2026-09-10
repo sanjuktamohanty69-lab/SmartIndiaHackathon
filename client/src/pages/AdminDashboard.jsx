@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import client from '../api/client'
 import WorkerCard from '../components/WorkerCard'
 import { useAuth } from '../context/AuthContext'
+import ThemeToggle from '../components/ThemeToggle'
 
 const tabs = ['Overview', 'Workers', 'Disputes']
 
@@ -83,7 +84,10 @@ function AdminDashboard() {
             <h1 className="mt-2 text-3xl font-bold text-slate-900">Operations dashboard</h1>
             <p className="mt-2 text-slate-600">Welcome, {user?.name || 'Admin'}. Monitor the network and resolve disputes.</p>
           </div>
-          <button className="text-sm font-semibold text-slate-600 hover:text-primary" type="button" onClick={handleLogout}>Sign out</button>
+          <div className="flex items-center gap-4">
+            <ThemeToggle />
+            <button className="text-sm font-semibold text-slate-600 hover:text-primary" type="button" onClick={handleLogout}>Sign out</button>
+          </div>
         </header>
 
         <nav className="mb-6 flex gap-2 border-b border-slate-200" aria-label="Admin sections">

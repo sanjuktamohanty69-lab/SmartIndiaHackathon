@@ -4,6 +4,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import client from '../api/client'
 import WorkerCard from '../components/WorkerCard'
 import { useAuth } from '../context/AuthContext'
+import ThemeToggle from '../components/ThemeToggle'
 
 const fallbackLocation = { lat: 12.9716, lng: 77.5946 }
 const trades = ['plumber', 'electrician', 'carpenter']
@@ -153,9 +154,12 @@ function CustomerDashboard() {
             <p className="text-sm font-bold uppercase tracking-[0.2em] text-primary">SahakarWorks</p>
             <h1 className="mt-2 text-3xl font-bold text-slate-900">How can we help, {user?.name || 'there'}?</h1>
           </div>
-          <button className="text-sm font-semibold text-slate-600 hover:text-primary" type="button" onClick={handleLogout}>
-            Sign out
-          </button>
+          <div className="flex items-center gap-4">
+            <ThemeToggle />
+            <button className="text-sm font-semibold text-slate-600 hover:text-primary" type="button" onClick={handleLogout}>
+              Sign out
+            </button>
+          </div>
         </header>
 
         <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)]">
@@ -180,7 +184,7 @@ function CustomerDashboard() {
                 Describe the work
                 <div className="relative mt-2">
                   <textarea
-                    className="min-h-32 w-full resize-y rounded-lg border border-slate-300 px-3 py-3 pr-14 outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
+                    className="min-h-32 w-full resize-y rounded-lg border border-slate-300 bg-white px-3 py-3 pr-14 text-slate-900 outline-none placeholder:text-slate-400 focus:border-primary focus:ring-2 focus:ring-primary/20 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-400"
                     name="description"
                     value={form.description}
                     onChange={updateField}

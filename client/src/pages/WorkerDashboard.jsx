@@ -3,6 +3,7 @@ import { io } from 'socket.io-client'
 import { useNavigate } from 'react-router-dom'
 import client from '../api/client'
 import { useAuth } from '../context/AuthContext'
+import ThemeToggle from '../components/ThemeToggle'
 
 function WorkerDashboard() {
   const { user, logout } = useAuth()
@@ -85,9 +86,12 @@ function WorkerDashboard() {
             <h1 className="mt-2 text-3xl font-bold text-slate-900">Worker dashboard</h1>
             <p className="mt-2 text-slate-600">Welcome back, {user?.name || 'worker'}.</p>
           </div>
-          <button className="text-sm font-semibold text-slate-600 hover:text-primary" type="button" onClick={handleLogout}>
-            Sign out
-          </button>
+          <div className="flex items-center gap-4">
+            <ThemeToggle />
+            <button className="text-sm font-semibold text-slate-600 hover:text-primary" type="button" onClick={handleLogout}>
+              Sign out
+            </button>
+          </div>
         </header>
 
         {error && <p className="mb-6 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">{error}</p>}

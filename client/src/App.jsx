@@ -1,4 +1,4 @@
-import { BrowserRouter, Route, Routes } from 'react-router-dom'
+import { BrowserRouter, Route, Routes, useLocation } from 'react-router-dom'
 import { ThemeProvider } from './context/ThemeContext'
 import { AuthProvider } from './context/AuthContext'
 import ThemeToggle from './components/ThemeToggle'
@@ -19,15 +19,26 @@ function Placeholder({ title }) {
   )
 }
 
+function GlobalThemeToggle() {
+  const { pathname } = useLocation()
+  const isDashboard = ['/customer', '/worker', '/admin'].includes(pathname)
+
+  if (isDashboard) return null
+
+  return (
+    <div className="fixed right-5 top-5 z-50">
+      <ThemeToggle />
+    </div>
+  )
+}
+
 function App() {
   return (
     <ThemeProvider>
       <AuthProvider>
         <BrowserRouter>
           <div className="min-h-screen bg-slate-50 text-slate-900 transition-colors duration-200 dark:bg-slate-950 dark:text-slate-100">
-            <div className="fixed right-5 top-5 z-50">
-              <ThemeToggle />
-            </div>
+            <GlobalThemeToggle />
             <Routes>
               <Route path="/" element={<Login />} />
               <Route path="/login" element={<Login />} />
