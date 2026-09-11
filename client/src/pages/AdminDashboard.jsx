@@ -4,6 +4,7 @@ import client from '../api/client'
 import WorkerCard from '../components/WorkerCard'
 import { useAuth } from '../context/AuthContext'
 import ThemeToggle from '../components/ThemeToggle'
+import AppHeader from '../components/AppHeader'
 
 const tabs = ['Overview', 'Workers', 'Disputes']
 
@@ -78,17 +79,19 @@ function AdminDashboard() {
   return (
     <main className="min-h-screen bg-slate-50 px-4 py-8 text-slate-900 transition-colors duration-200 sm:px-6 dark:bg-slate-950 dark:text-slate-100">
       <div className="mx-auto max-w-6xl">
-        <header className="mb-8 flex items-center justify-between gap-4">
-          <div>
-            <p className="text-sm font-bold uppercase tracking-[0.2em] text-primary">SahakarWorks Admin</p>
-            <h1 className="mt-2 text-3xl font-bold text-slate-900 dark:text-slate-100">Operations dashboard</h1>
-            <p className="mt-2 text-slate-600 dark:text-slate-300">Welcome, {user?.name || 'Admin'}. Monitor the network and resolve disputes.</p>
-          </div>
-          <div className="flex items-center gap-4">
-            <ThemeToggle />
-            <button className="text-sm font-semibold text-slate-600 hover:text-primary dark:text-slate-300 dark:hover:text-emerald-400" type="button" onClick={handleLogout}>Sign out</button>
-          </div>
-        </header>
+        <div className="mb-8">
+          <AppHeader
+            title="Operations dashboard"
+            subtitle={`Welcome, ${user?.name || 'Admin'}. Monitor the network and resolve disputes.`}
+            badge="SahakarWorks Admin"
+            actions={(
+              <>
+                <ThemeToggle />
+                <button className="text-sm font-semibold text-slate-600 hover:text-primary dark:text-slate-300 dark:hover:text-emerald-400" type="button" onClick={handleLogout}>Sign out</button>
+              </>
+            )}
+          />
+        </div>
 
         <nav className="mb-6 flex gap-2 border-b border-slate-200 dark:border-slate-700" aria-label="Admin sections">
           {tabs.map((tab) => (

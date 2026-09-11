@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom'
 import client from '../api/client'
 import { useAuth } from '../context/AuthContext'
 import ThemeToggle from '../components/ThemeToggle'
+import AppHeader from '../components/AppHeader'
 
 function WorkerDashboard() {
   const { user, logout } = useAuth()
@@ -98,31 +99,25 @@ function WorkerDashboard() {
 
   return (
     <main className="min-h-screen bg-slate-50 px-4 py-8 text-slate-900 transition-colors duration-200 sm:px-6 dark:bg-slate-950 dark:text-slate-100">
-      <div className="mx-auto max-w-5xl">
-        <header className="mb-8 flex items-center justify-between gap-4">
-          <div>
-            <p className="text-sm font-bold uppercase tracking-[0.2em] text-primary">SahakarWorks</p>
-            <h1 className="mt-2 text-3xl font-bold text-slate-900 dark:text-slate-100">Worker dashboard</h1>
-            <p className="mt-2 text-slate-600 dark:text-slate-300">Welcome back, {user?.name || 'worker'}.</p>
-          </div>
-          <div className="flex items-center gap-4">
-            <ThemeToggle />
-            <button className="text-sm font-semibold text-slate-600 hover:text-primary dark:text-slate-300 dark:hover:text-emerald-400" type="button" onClick={handleLogout}>
-              Sign out
-            </button>
-          </div>
-        </header>
+      <div className="mx-auto max-w-6xl">
+        <AppHeader onLogout={handleLogout} />
 
-        <div className="mb-6 grid gap-4 md:grid-cols-3">
-          <div className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-200 transition-colors duration-200 dark:bg-slate-900 dark:ring-slate-700">
+        <div className="mt-8 rounded-2xl border border-slate-200 bg-white/80 p-6 shadow-sm dark:border-slate-700 dark:bg-slate-900/80 sm:p-8">
+          <p className="text-xs font-bold uppercase tracking-[0.22em] text-primary">Worker dashboard</p>
+          <h1 className="mt-2 text-3xl font-bold text-slate-900 dark:text-slate-100">Welcome back, {user?.name || 'worker'}.</h1>
+          <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">Review your work queue and track your earnings in one place.</p>
+        </div>
+
+        <div className="mt-8 mb-6 grid gap-6 md:grid-cols-3">
+          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition-colors duration-200 dark:border-slate-700 dark:bg-slate-900">
             <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Total earned</p>
             <p className="mt-2 text-2xl font-bold text-primary">₹{totalEarned.toFixed(2)}</p>
           </div>
-          <div className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-200 transition-colors duration-200 dark:bg-slate-900 dark:ring-slate-700">
-            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Points & credits</p>
-            <p className="mt-2 text-2xl font-bold text-amber-600 dark:text-amber-300">{totalCreditPoints.toFixed(0)}</p>
+          <div className="rounded-2xl border border-amber-200 bg-amber-50 p-5 shadow-sm transition-colors duration-200 dark:border-amber-900/80 dark:bg-amber-950/20">
+            <p className="text-xs font-semibold uppercase tracking-wide text-amber-700 dark:text-amber-300">Credits balance</p>
+            <p className="mt-2 text-2xl font-bold text-amber-700 dark:text-amber-300">{totalCreditPoints.toFixed(0)}</p>
           </div>
-          <div className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-200 transition-colors duration-200 dark:bg-slate-900 dark:ring-slate-700">
+          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition-colors duration-200 dark:border-slate-700 dark:bg-slate-900">
             <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Loan readiness</p>
             <p className={`mt-2 text-lg font-bold ${loanReady ? 'text-emerald-600 dark:text-emerald-300' : 'text-slate-700 dark:text-slate-200'}`}>
               {loanReady ? 'Eligible' : `${Math.max(0, 500 - totalCreditPoints).toFixed(0)} pts to qualify`}
@@ -132,7 +127,7 @@ function WorkerDashboard() {
 
         {error && <p className="mb-6 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">{error}</p>}
 
-        <section className="rounded-2xl bg-white p-6 shadow-xl shadow-emerald-950/5 ring-1 ring-slate-200 transition-colors duration-200 sm:p-8 dark:bg-slate-900 dark:ring-slate-700">
+        <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition-colors duration-200 dark:border-slate-700 dark:bg-slate-900 sm:p-8">
           <div className="flex items-end justify-between gap-4">
             <div>
               <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100">Available work</h2>
@@ -144,7 +139,7 @@ function WorkerDashboard() {
           {loading ? (
             <p className="mt-8 text-sm text-slate-500">Loading job offers...</p>
           ) : jobs.length ? (
-            <div className="mt-6 grid gap-4">
+            <div className="mt-6 grid gap-5">
               {jobs.map((job) => (
                 <article className="rounded-xl border border-slate-200 p-5" key={job.id}>
                   <div className="flex flex-wrap items-start justify-between gap-4">

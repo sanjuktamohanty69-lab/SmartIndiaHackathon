@@ -5,9 +5,16 @@ import client from '../api/client'
 import WorkerCard from '../components/WorkerCard'
 import { useAuth } from '../context/AuthContext'
 import ThemeToggle from '../components/ThemeToggle'
+import AppHeader from '../components/AppHeader'
 
 const fallbackLocation = { lat: 12.9716, lng: 77.5946 }
-const trades = ['plumber', 'electrician', 'carpenter']
+const trades = ['plumber', 'electrician', 'carpenter', 'househelp']
+const serviceOptions = [
+  { value: 'plumber', label: 'Plumber', icon: '🔧', description: 'Fix leaks and repairs' },
+  { value: 'electrician', label: 'Electrician', icon: '💡', description: 'Wiring and electrical fixes' },
+  { value: 'carpenter', label: 'Carpenter', icon: '🪚', description: 'Furniture and woodwork' },
+  { value: 'househelp', label: 'Househelp', icon: '🧹', description: 'Cleaning and household support' },
+]
 const steps = [
   { status: 'pending', label: 'Posted' },
   { status: 'matched', label: 'Matched' },
@@ -175,43 +182,50 @@ function CustomerDashboard() {
 
   return (
     <main className="min-h-screen bg-slate-50 px-4 py-8 text-slate-900 transition-colors duration-200 sm:px-6 dark:bg-slate-950 dark:text-slate-100">
-      <div className="mx-auto max-w-5xl">
-        <header className="mb-8 flex items-center justify-between gap-4">
-          <div>
-            <p className="text-sm font-bold uppercase tracking-[0.2em] text-primary">SahakarWorks</p>
-            <h1 className="mt-2 text-3xl font-bold text-slate-900 dark:text-slate-100">How can we help, {user?.name || 'there'}?</h1>
-          </div>
-          <div className="flex items-center gap-4">
-            <ThemeToggle />
-            <button className="text-sm font-semibold text-slate-600 hover:text-primary dark:text-slate-300 dark:hover:text-emerald-400" type="button" onClick={handleLogout}>
-              Sign out
-            </button>
-          </div>
-        </header>
+      <div className="mx-auto max-w-6xl">
+        <AppHeader onLogout={handleLogout} />
 
-        <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)]">
-          <section className="rounded-2xl bg-white p-6 shadow-xl shadow-emerald-950/5 ring-1 ring-slate-200 transition-colors duration-200 sm:p-8 dark:bg-slate-900 dark:ring-slate-700">
+        <div className="mt-8 rounded-2xl border border-slate-200 bg-white/80 p-6 shadow-sm dark:border-slate-700 dark:bg-slate-900/80 sm:p-8">
+          <p className="text-xs font-bold uppercase tracking-[0.22em] text-primary">Service dashboard</p>
+          <h1 className="mt-2 text-3xl font-bold text-slate-900 dark:text-slate-100">How can we help, {user?.name || 'there'}?</h1>
+          <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">Tell us what you need and we will find trusted local workers.</p>
+        </div>
+
+        <div className="mt-8 grid gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)]">
+          <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition-colors duration-200 dark:border-slate-700 dark:bg-slate-900 sm:p-8">
             <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100">Request a service</h2>
-            <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">Tell us what you need and we will find trusted local workers.</p>
+            <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">Choose the kind of help you need and describe the work.</p>
 
-            <form className="mt-6 space-y-5" onSubmit={handleSubmit}>
-              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200">
-                Service type
-                <select
-                  className="mt-2 w-full rounded-lg border border-slate-300 bg-white px-3 py-3 text-slate-900 outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
-                  name="trade"
-                  value={form.trade}
-                  onChange={updateField}
-                >
-                  {trades.map((trade) => <option key={trade} value={trade}>{trade[0].toUpperCase() + trade.slice(1)}</option>)}
-                </select>
-              </label>
+            <form className="mt-6 space-y-6" onSubmit={handleSubmit}>
+              <div>
+                <p className="text-sm font-semibold text-slate-700 dark:text-slate-200">Service type</p>
+                <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                  {serviceOptions.map((option) => (
+                    <button
+                      key={option.value}
+                      type="button"
+                      onClick={() => setForm((currentForm) => ({ ...currentForm, trade: option.value }))}
+                      className={`flex items-center gap-3 rounded-xl border p-3 text-left transition-all ${
+                        form.trade === option.value
+                          ? 'border-primary bg-emerald-50 text-primary shadow-sm ring-2 ring-primary/10 dark:border-emerald-400 dark:bg-emerald-950/40 dark:text-emerald-300'
+                          : 'border-slate-200 bg-slate-50 text-slate-700 hover:border-primary/60 hover:bg-white dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:border-emerald-400/60'
+                      }`}
+                    >
+                      <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-white text-xl shadow-sm dark:bg-slate-900">{option.icon}</span>
+                      <span className="flex flex-col">
+                        <span className="text-sm font-semibold">{option.label}</span>
+                        <span className="text-xs text-slate-500 dark:text-slate-400">{option.description}</span>
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              </div>
 
               <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200">
                 Describe the work
                 <div className="relative mt-2">
                   <textarea
-                    className="min-h-32 w-full resize-y rounded-lg border border-slate-300 bg-white px-3 py-3 pr-14 text-slate-900 outline-none placeholder:text-slate-400 focus:border-primary focus:ring-2 focus:ring-primary/20 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-400"
+                    className="min-h-32 w-full resize-y rounded-xl border border-slate-300 bg-white px-3 py-3 pr-14 text-slate-900 outline-none placeholder:text-slate-400 focus:border-primary focus:ring-2 focus:ring-primary/20 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-400"
                     name="description"
                     value={form.description}
                     onChange={updateField}
@@ -219,13 +233,13 @@ function CustomerDashboard() {
                     required
                   />
                   <button
-                    className={`absolute right-3 top-3 rounded-full p-2 text-primary transition hover:bg-emerald-50 ${isListening ? 'bg-emerald-100' : ''}`}
+                    className={`absolute right-3 top-3 flex h-11 w-11 items-center justify-center rounded-full bg-primary text-white shadow-md ring-2 ring-white transition-all duration-200 hover:scale-105 hover:bg-emerald-700 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-primary/40 dark:ring-slate-800 ${isListening ? 'bg-red-500 hover:bg-red-600' : ''}`}
                     type="button"
                     aria-label={isListening ? 'Stop voice input' : 'Dictate service description'}
                     title={isListening ? 'Stop voice input' : 'Dictate service description'}
                     onClick={toggleSpeechRecognition}
                   >
-                    <span aria-hidden="true" className="text-lg">{isListening ? '■' : '🎙'}</span>
+                    <span aria-hidden="true" className="text-2xl leading-none">{isListening ? '■' : '🎙'}</span>
                   </button>
                 </div>
               </label>
@@ -233,7 +247,7 @@ function CustomerDashboard() {
               {error && <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
 
               <button
-                className="w-full rounded-lg bg-primary px-4 py-3 font-semibold text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-60"
+                className="w-full rounded-xl bg-primary px-4 py-3 font-semibold text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-60"
                 type="submit"
                 disabled={isSubmitting}
               >
@@ -242,7 +256,7 @@ function CustomerDashboard() {
             </form>
           </section>
 
-          <section className="rounded-2xl bg-white p-6 shadow-xl shadow-emerald-950/5 ring-1 ring-slate-200 transition-colors duration-200 sm:p-8 dark:bg-slate-900 dark:ring-slate-700">
+          <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition-colors duration-200 dark:border-slate-700 dark:bg-slate-900 sm:p-8">
             <div className="flex items-start justify-between gap-4">
               <div>
                 <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100">Your request</h2>
@@ -253,7 +267,7 @@ function CustomerDashboard() {
 
             {job ? (
               <>
-                <div className="mt-8 flex items-start">
+                <div className="mt-8 flex items-start gap-3">
                   {steps.map((step, index) => (
                     <div className="flex flex-1 items-start" key={step.status}>
                       <div className="flex flex-col items-center">

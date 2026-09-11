@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import logo from '../assets/transparentlogo.png'
 
 function Login() {
   const navigate = useNavigate()
@@ -31,9 +32,9 @@ function Login() {
   return (
     <main className="flex min-h-screen items-center justify-center bg-slate-50 px-4 py-10 transition-colors duration-200 dark:bg-slate-950">
       <section className="w-full max-w-md rounded-2xl bg-white p-8 shadow-xl shadow-emerald-950/5 ring-1 ring-slate-200 transition-colors duration-200 dark:bg-slate-900 dark:ring-slate-700">
-        <div className="mb-8">
-          <p className="text-sm font-bold uppercase tracking-[0.2em] text-primary">SahakarWorks</p>
-          <h1 className="mt-3 text-3xl font-bold text-slate-900 dark:text-slate-100">Welcome back</h1>
+        <div className="mb-8 flex flex-col items-center justify-center bg-transparent p-0 text-center">
+          <img src={logo} alt="SahakarWorks logo" className="h-10 w-auto bg-transparent object-contain sm:h-12" />
+          <h1 className="mt-4 text-3xl font-bold text-slate-900 dark:text-slate-100">Welcome back</h1>
           <p className="mt-2 text-slate-600 dark:text-slate-300">Sign in to continue to your workspace.</p>
         </div>
 
