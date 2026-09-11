@@ -5,6 +5,7 @@ const { Server } = require('socket.io')
 const authRouter = require('./routes/auth')
 const adminRouter = require('./routes/admin')
 const jobsRouter = require('./routes/jobs')
+const db = require('./db')
 
 const app = express()
 const server = http.createServer(app)
@@ -84,5 +85,23 @@ server.on('error', (error) => {
 
   throw error
 })
+
+let isShuttingDown = false
+
+function shutdown(signal) {
+  if (isShuttingDown) return
+  isShuttingDown = true
+  console.log(`Received ${signal}, shutting down gracefully`)
+
+  io.close(() => {
+    server.close(() => {
+      db.close()
+      process.exit(0)
+    })
+  })
+}
+
+process.on('SIGINT', () => shutdown('SIGINT'))
+process.on('SIGTERM', () => shutdown('SIGTERM'))
 
 listenOnPort(preferredPort)

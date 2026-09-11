@@ -2,7 +2,6 @@ import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import client from '../api/client'
 import DocumentUpload from '../components/DocumentUpload'
-import logo from '../assets/transparentlogo.png'
 
 const bengaluruLocation = { lat: 12.9716, lng: 77.5946 }
 
@@ -45,8 +44,7 @@ function Signup() {
     <main className="flex min-h-screen items-center justify-center bg-slate-50 px-4 py-10 transition-colors duration-200 dark:bg-slate-950">
       <section className="w-full max-w-md rounded-2xl bg-white p-8 shadow-xl shadow-emerald-950/5 ring-1 ring-slate-200 transition-colors duration-200 dark:bg-slate-900 dark:ring-slate-700">
         <div className="mb-8 flex flex-col items-center justify-center bg-transparent p-0 text-center">
-          <img src={logo} alt="SahakarWorks logo" className="h-10 w-auto bg-transparent object-contain sm:h-12" />
-          <h1 className="mt-4 text-3xl font-bold text-slate-900 dark:text-slate-100">Create your account</h1>
+          <h1 className="text-3xl font-bold text-slate-900 dark:text-slate-100">Create your account</h1>
           <p className="mt-2 text-slate-600 dark:text-slate-300">Join a trusted local services network.</p>
         </div>
 

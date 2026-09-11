@@ -48,6 +48,7 @@ function CustomerDashboard() {
   const [paymentHistory, setPaymentHistory] = useState([])
   const [error, setError] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [hiringWorkerId, setHiringWorkerId] = useState(null)
   const [isListening, setIsListening] = useState(false)
   const activeJobId = job?.id
   const jobStatus = job?.status
@@ -89,7 +90,7 @@ function CustomerDashboard() {
       auth: { userId: user.id },
     })
 
-    socket.on('job-accepted', async (event) => {
+    const refreshJob = async (event) => {
       if (event.job?.id !== activeJobId) return
 
       setJob(event.job)
@@ -100,7 +101,10 @@ function CustomerDashboard() {
       } catch (requestError) {
         setError(requestError.response?.data?.error || 'Unable to refresh the accepted job.')
       }
-    })
+    }
+
+    socket.on('worker-applied', refreshJob)
+    socket.on('job-accepted', refreshJob)
 
     return () => socket.disconnect()
   }, [user?.id, activeJobId])
@@ -123,7 +127,8 @@ function CustomerDashboard() {
   }, [activeJobId, jobStatus])
 
   function updateField(event) {
-    setForm({ ...form, [event.target.name]: event.target.value })
+    const { name, value } = event.target
+    setForm((currentForm) => ({ ...currentForm, [name]: value }))
   }
 
   function toggleSpeechRecognition() {
@@ -168,13 +173,29 @@ function CustomerDashboard() {
 
     try {
       const location = await getLocation()
-      const { data } = await client.post('/jobs', { ...form, ...location })
+      const request = { ...form, ...location }
+      const { data } = await client.post('/jobs', request)
       setJob(data.job)
       setMatches(data.matches)
     } catch (requestError) {
       setError(requestError.response?.data?.error || 'Unable to post your service request.')
     } finally {
       setIsSubmitting(false)
+    }
+  }
+
+  async function hireWorker(workerId) {
+    setHiringWorkerId(workerId)
+    setError('')
+
+    try {
+      const { data } = await client.post(`/jobs/${activeJobId}/hire`, { worker_id: workerId })
+      setJob(data.job)
+      setMatches(data.matches)
+    } catch (requestError) {
+      setError(requestError.response?.data?.error || 'Unable to hire this worker.')
+    } finally {
+      setHiringWorkerId(null)
     }
   }
 
@@ -283,19 +304,31 @@ function CustomerDashboard() {
 
                 <div className="mt-10">
                   <h3 className="font-bold text-slate-900 dark:text-slate-100">Worker matches</h3>
-                  {matches.length ? (
+                  {matches.some((match) => match.application_status === 'applied') ? (
                     <div className="mt-3 space-y-3">
-                      {matches.map((match) => (
+                      {matches.filter((match) => match.application_status === 'applied').map((match) => (
                         <WorkerCard
                           key={match.id}
                           name={match.worker_name}
                           trade={match.trade}
                           trustScore={match.trust_score}
                           distance={match.distance_km}
-                        />
+                        >
+                          <div className="flex items-center justify-between gap-3">
+                            <span className="text-sm text-slate-600 dark:text-slate-300">Applied to help with this request</span>
+                            <button
+                              className="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-60"
+                              type="button"
+                              disabled={hiringWorkerId === match.worker_id}
+                              onClick={() => hireWorker(match.worker_id)}
+                            >
+                              {hiringWorkerId === match.worker_id ? 'Hiring...' : 'Hire Worker'}
+                            </button>
+                          </div>
+                        </WorkerCard>
                       ))}
                     </div>
-                  ) : <p className="mt-3 text-sm text-slate-500 dark:text-slate-400">We are looking for available workers.</p>}
+                  ) : <p className="mt-3 text-sm text-slate-500 dark:text-slate-400">We are waiting for workers to apply.</p>}
                 </div>
 
                 {job?.transaction && (

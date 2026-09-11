@@ -66,6 +66,12 @@ function WorkerDashboard() {
     socket.on('new-job-offer', () => {
       fetchJobs()
     })
+    socket.on('worker-hired', () => {
+      fetchJobs()
+    })
+    socket.on('worker-application-dismissed', () => {
+      fetchJobs()
+    })
 
     return () => socket.disconnect()
   }, [user?.id, fetchJobs])
@@ -145,13 +151,13 @@ function WorkerDashboard() {
                   <div className="flex flex-wrap items-start justify-between gap-4">
                     <div>
                       <div className="flex flex-wrap items-center gap-2">
-                        <h3 className="text-lg font-bold capitalize text-slate-900">{job.trade}</h3>
+                        <h3 className="text-lg font-bold capitalize text-slate-900 dark:text-slate-100">{job.trade}</h3>
                         <span className="rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-bold uppercase tracking-wide text-primary">
                           {job.match_status || job.status}
                         </span>
                       </div>
-                      <p className="mt-2 text-slate-700">{job.description}</p>
-                      <p className="mt-2 text-sm text-slate-500">
+                      <p className="mt-2 text-slate-700 dark:text-slate-200">{job.description}</p>
+                      <p className="mt-2 text-sm text-slate-500 dark:text-slate-300">
                         {Number(job.distance_km).toFixed(2)} km away · Customer: {job.customer_name}
                       </p>
                     </div>
@@ -169,6 +175,10 @@ function WorkerDashboard() {
                           Points earned: {getJobCreditPoints(job).toFixed(0)} credits
                         </div>
                       </div>
+                    ) : job.match_status === 'offered' && job.application_status === 'applied' ? (
+                      <span className="rounded-lg bg-amber-50 px-4 py-2 text-sm font-semibold text-amber-700">
+                        Application sent
+                      </span>
                     ) : job.match_status === 'offered' ? (
                       <div className="flex shrink-0 gap-3">
                         <button

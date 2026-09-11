@@ -1,7 +1,6 @@
 import { Mic, Search } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import ThemeToggle from './ThemeToggle'
-import logo from '../assets/transparentlogo.png'
 
 export default function AppHeader({ className = '', onLogout }) {
   const { user, logout } = useAuth()
@@ -11,11 +10,6 @@ export default function AppHeader({ className = '', onLogout }) {
   return (
     <header className={`flex flex-col gap-4 rounded-2xl border border-slate-200 bg-white/90 px-4 py-3 shadow-sm backdrop-blur-sm dark:border-slate-700 dark:bg-slate-900/90 sm:flex-row sm:items-center sm:justify-between ${className}`}>
       <div className="flex items-center gap-3 bg-transparent p-0 shadow-none">
-        <img
-          src={logo}
-          alt="SahakarWorks logo"
-          className="h-10 w-auto bg-transparent object-contain sm:h-12"
-        />
         <div className="leading-none">
           <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-primary">SahakarWorks</p>
         </div>

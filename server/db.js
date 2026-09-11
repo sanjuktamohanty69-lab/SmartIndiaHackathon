@@ -52,6 +52,19 @@ db.exec(`
     FOREIGN KEY(worker_id) REFERENCES users(id)
   );
 
+  CREATE TABLE IF NOT EXISTS applied_workers (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    job_id INTEGER NOT NULL,
+    worker_id INTEGER NOT NULL,
+    worker_name TEXT NOT NULL,
+    trust_score REAL NOT NULL,
+    status TEXT CHECK(status IN ('applied', 'hired', 'dismissed')) DEFAULT 'applied',
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(job_id, worker_id),
+    FOREIGN KEY(job_id) REFERENCES jobs(id),
+    FOREIGN KEY(worker_id) REFERENCES users(id)
+  );
+
   CREATE TABLE IF NOT EXISTS transactions (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     job_id INTEGER,
