@@ -24,6 +24,8 @@ db.exec(`
     trust_score REAL DEFAULT 85.0,
     available INTEGER DEFAULT 1,
     eshram_verified INTEGER DEFAULT 1,
+    credit_points REAL DEFAULT 0,
+    loan_eligible INTEGER DEFAULT 0,
     FOREIGN KEY(user_id) REFERENCES users(id)
   );
 
@@ -57,6 +59,7 @@ db.exec(`
     welfare_amount REAL,
     platform_amount REAL,
     total_amount REAL,
+    credit_points_earned REAL DEFAULT 0,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY(job_id) REFERENCES jobs(id)
   );
@@ -82,5 +85,19 @@ db.exec(`
     FOREIGN KEY(juror_id) REFERENCES users(id)
   );
 `)
+
+for (const statement of [
+  'ALTER TABLE worker_profiles ADD COLUMN credit_points REAL DEFAULT 0',
+  'ALTER TABLE worker_profiles ADD COLUMN loan_eligible INTEGER DEFAULT 0',
+  'ALTER TABLE transactions ADD COLUMN credit_points_earned REAL DEFAULT 0',
+]) {
+  try {
+    db.prepare(statement).run()
+  } catch (error) {
+    if (!String(error.message).includes('duplicate column name')) {
+      throw error
+    }
+  }
+}
 
 module.exports = db

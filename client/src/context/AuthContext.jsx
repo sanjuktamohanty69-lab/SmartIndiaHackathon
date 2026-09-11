@@ -3,9 +3,18 @@ import client from '../api/client'
 
 const AuthContext = createContext(null)
 
+function clearStoredAuth() {
+  const keys = ['token', 'user', 'role']
+
+  keys.forEach((key) => {
+    localStorage.removeItem(key)
+    sessionStorage.removeItem(key)
+  })
+}
+
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(() => {
-    const storedUser = localStorage.getItem('user')
+    const storedUser = localStorage.getItem('user') || sessionStorage.getItem('user')
     return storedUser ? JSON.parse(storedUser) : null
   })
 
@@ -15,10 +24,18 @@ export function AuthProvider({ children }) {
 
     if (token) {
       localStorage.setItem('token', token)
+      sessionStorage.setItem('token', token)
     }
 
     if (data.user) {
       localStorage.setItem('user', JSON.stringify(data.user))
+      sessionStorage.setItem('user', JSON.stringify(data.user))
+
+      if (data.user.role) {
+        localStorage.setItem('role', String(data.user.role))
+        sessionStorage.setItem('role', String(data.user.role))
+      }
+
       setUser(data.user)
     }
 
@@ -26,8 +43,7 @@ export function AuthProvider({ children }) {
   }
 
   function logout() {
-    localStorage.removeItem('token')
-    localStorage.removeItem('user')
+    clearStoredAuth()
     setUser(null)
   }
 

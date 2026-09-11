@@ -15,15 +15,15 @@ function WorkerCard({ name, trade, trustScore, distance, children }) {
       : 'bg-slate-100 text-slate-600'
 
   return (
-    <article className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm transition hover:border-emerald-200 hover:shadow-md">
+    <article className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm transition hover:border-emerald-200 hover:shadow-md dark:border-slate-700 dark:bg-slate-900 dark:hover:border-emerald-500/60">
       <div className="flex items-start justify-between gap-4">
         <div className="flex min-w-0 items-center gap-3">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-emerald-50 text-primary">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-emerald-50 text-primary dark:bg-emerald-950/60 dark:text-emerald-300">
             <TradeIcon size={20} strokeWidth={2} aria-hidden="true" />
           </div>
           <div className="min-w-0">
-            <p className="truncate font-semibold text-slate-900">{name}</p>
-            <p className="mt-0.5 capitalize text-sm text-slate-600">{trade}</p>
+            <p className="truncate font-semibold text-slate-900 dark:text-slate-100">{name}</p>
+            <p className="mt-0.5 capitalize text-sm text-slate-600 dark:text-slate-300">{trade}</p>
           </div>
         </div>
         <span className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-bold ${trustClass}`}>
@@ -31,8 +31,8 @@ function WorkerCard({ name, trade, trustScore, distance, children }) {
         </span>
       </div>
 
-      <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 text-xs font-semibold text-slate-500">
-        <span className="inline-flex items-center gap-1 text-emerald-700">
+      <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 text-xs font-semibold text-slate-500 dark:text-slate-400">
+        <span className="inline-flex items-center gap-1 text-emerald-700 dark:text-emerald-300">
           <BadgeCheck size={15} aria-hidden="true" />
           e-Shram Verified
         </span>
@@ -41,7 +41,7 @@ function WorkerCard({ name, trade, trustScore, distance, children }) {
         )}
       </div>
 
-      {children && <div className="mt-4 border-t border-slate-100 pt-4">{children}</div>}
+      {children && <div className="mt-4 border-t border-slate-100 pt-4 dark:border-slate-700">{children}</div>}
     </article>
   )
 }

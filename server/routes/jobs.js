@@ -8,7 +8,7 @@ const router = express.Router()
 router.use(requireAuth)
 
 function requireCustomer(req, res) {
-  if (req.user.role !== 'customer') {
+  if (String(req.user?.role || '').toLowerCase() !== 'customer') {
     res.status(403).json({ error: 'Only customers can access this resource.' })
     return false
   }
@@ -17,7 +17,7 @@ function requireCustomer(req, res) {
 }
 
 function requireWorker(req, res) {
-  if (req.user.role !== 'worker') {
+  if (String(req.user?.role || '').toLowerCase() !== 'worker') {
     res.status(403).json({ error: 'Only workers can access this resource.' })
     return false
   }
@@ -37,13 +37,46 @@ function getJobMatches(jobId) {
       users.name AS worker_name,
       users.phone AS worker_phone,
       worker_profiles.trade,
-      worker_profiles.trust_score
+      worker_profiles.trust_score,
+      transactions.id AS transaction_id,
+      transactions.worker_amount,
+      transactions.welfare_amount,
+      transactions.platform_amount,
+      transactions.total_amount,
+      transactions.credit_points_earned
     FROM job_matches
     JOIN users ON users.id = job_matches.worker_id
     JOIN worker_profiles ON worker_profiles.user_id = job_matches.worker_id
+    LEFT JOIN transactions ON transactions.job_id = job_matches.job_id
     WHERE job_matches.job_id = ?
     ORDER BY job_matches.score DESC
   `).all(jobId)
+}
+
+function normalizeJobWithTransaction(job) {
+  if (!job) return job
+
+  const creditPointsEarned = Number(job.credit_points_earned || 0)
+  const transaction = job.transaction_id
+    ? {
+        id: job.transaction_id,
+        job_id: job.job_id || job.id,
+        worker_amount: job.worker_amount,
+        welfare_amount: job.welfare_amount,
+        platform_amount: job.platform_amount,
+        total_amount: job.total_amount,
+        credit_points_earned: creditPointsEarned,
+      }
+    : null
+
+  const normalizedJob = { ...job }
+  delete normalizedJob.transaction_id
+  delete normalizedJob.worker_amount
+  delete normalizedJob.welfare_amount
+  delete normalizedJob.platform_amount
+  delete normalizedJob.total_amount
+
+  return { ...normalizedJob, credit_points_earned: creditPointsEarned, transaction }
 }
 
 function emitToUser(req, userId, event, payload) {
@@ -134,14 +167,21 @@ router.get('/offered-to-me', (req, res, next) => {
         job_matches.score,
         job_matches.status AS match_status,
         users.name AS customer_name,
-        users.phone AS customer_phone
+        users.phone AS customer_phone,
+        transactions.id AS transaction_id,
+        transactions.worker_amount,
+        transactions.welfare_amount,
+        transactions.platform_amount,
+        transactions.total_amount,
+        transactions.credit_points_earned
       FROM job_matches
       JOIN jobs ON jobs.id = job_matches.job_id
       JOIN users ON users.id = jobs.customer_id
+      LEFT JOIN transactions ON transactions.job_id = jobs.id
       WHERE job_matches.worker_id = ?
-        AND job_matches.status IN ('offered', 'accepted')
+        AND (job_matches.status IN ('offered', 'accepted') OR jobs.status = 'completed')
       ORDER BY jobs.created_at DESC, jobs.id DESC
-    `).all(req.user.id)
+    `).all(req.user.id).map((job) => normalizeJobWithTransaction(job))
 
     return res.json({ jobs })
   } catch (error) {
@@ -231,17 +271,35 @@ router.post('/:id/complete', (req, res, next) => {
       const workerAmount = Number((totalAmount * 0.95).toFixed(2))
       const welfareAmount = Number((totalAmount * 0.03).toFixed(2))
       const platformAmount = Number((totalAmount * 0.02).toFixed(2))
+
+      const rawCreditPoints = (totalAmount - 300) / 100 + 5
+      const creditPointsEarned = Number(Math.min(7, Math.max(5, rawCreditPoints)).toFixed(2))
+
+      const workerProfile = db.prepare('SELECT credit_points, loan_eligible FROM worker_profiles WHERE user_id = ?').get(req.user.id) || { credit_points: 0, loan_eligible: 0 }
+      const currentCreditPoints = Number(workerProfile.credit_points || 0)
+      const updatedCreditPoints = currentCreditPoints + creditPointsEarned
+      const updatedLoanEligible = updatedCreditPoints >= 500 ? 1 : 0
+
       const transactionResult = db.prepare(`
-        INSERT INTO transactions (job_id, worker_amount, welfare_amount, platform_amount, total_amount)
-        VALUES (?, ?, ?, ?, ?)
-      `).run(job.id, workerAmount, welfareAmount, platformAmount, totalAmount)
+        INSERT INTO transactions (job_id, worker_amount, welfare_amount, platform_amount, total_amount, credit_points_earned)
+        VALUES (?, ?, ?, ?, ?, ?)
+      `).run(job.id, workerAmount, welfareAmount, platformAmount, totalAmount, creditPointsEarned)
 
       db.prepare("UPDATE jobs SET status = 'completed' WHERE id = ?").run(job.id)
-      db.prepare('UPDATE worker_profiles SET available = 1 WHERE user_id = ?').run(req.user.id)
+      db.prepare(`
+        UPDATE worker_profiles
+        SET available = 1,
+            credit_points = ?,
+            loan_eligible = ?
+        WHERE user_id = ?
+      `).run(updatedCreditPoints, updatedLoanEligible, req.user.id)
+
+      const refreshedProfile = db.prepare('SELECT * FROM worker_profiles WHERE user_id = ?').get(req.user.id)
 
       return {
         job: db.prepare('SELECT * FROM jobs WHERE id = ?').get(job.id),
         transaction: db.prepare('SELECT * FROM transactions WHERE id = ?').get(transactionResult.lastInsertRowid),
+        profile: refreshedProfile,
       }
     })()
 
@@ -292,13 +350,19 @@ router.get('/:id/matches', (req, res, next) => {
   try {
     if (!requireCustomer(req, res)) return
 
-    const job = db.prepare('SELECT * FROM jobs WHERE id = ? AND customer_id = ?').get(req.params.id, req.user.id)
+    const job = db.prepare(`
+      SELECT jobs.*, transactions.id AS transaction_id, transactions.worker_amount, transactions.welfare_amount,
+             transactions.platform_amount, transactions.total_amount, transactions.credit_points_earned
+      FROM jobs
+      LEFT JOIN transactions ON transactions.job_id = jobs.id
+      WHERE jobs.id = ? AND jobs.customer_id = ?
+    `).get(req.params.id, req.user.id)
 
     if (!job) {
       return res.status(404).json({ error: 'Job not found.' })
     }
 
-    return res.json({ job, matches: getJobMatches(job.id) })
+    return res.json({ job: normalizeJobWithTransaction(job), matches: getJobMatches(job.id) })
   } catch (error) {
     return next(error)
   }
@@ -309,10 +373,19 @@ router.get('/mine', (req, res, next) => {
     if (!requireCustomer(req, res)) return
 
     const jobs = db.prepare(`
-      SELECT * FROM jobs
-      WHERE customer_id = ?
-      ORDER BY created_at DESC, id DESC
-    `).all(req.user.id)
+      SELECT
+        jobs.*,
+        transactions.id AS transaction_id,
+        transactions.worker_amount,
+        transactions.welfare_amount,
+        transactions.platform_amount,
+        transactions.total_amount,
+        transactions.credit_points_earned
+      FROM jobs
+      LEFT JOIN transactions ON transactions.job_id = jobs.id
+      WHERE jobs.customer_id = ?
+      ORDER BY jobs.created_at DESC, jobs.id DESC
+    `).all(req.user.id).map((job) => normalizeJobWithTransaction(job))
 
     return res.json({ jobs })
   } catch (error) {
